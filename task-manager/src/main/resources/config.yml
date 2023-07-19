@@ -1,0 +1,39 @@
+---
+logging:
+  level: INFO
+  loggers:
+    com.oracle.challenge: DEBUG
+
+  appenders:
+    - type: console
+    - type: file
+      threshold: INFO
+      logFormat: "%-6level [%d{HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n"
+      currentLogFilename: /tmp/application.log
+      archivedLogFilenamePattern: /tmp/application-%d{yyyy-MM-dd}-%i.log.gz
+      archivedFileCount: 7
+      timeZone: UTC
+      maxFileSize: 10MiB
+database:
+  driverClass: com.mysql.cj.jdbc.Driver
+  user: ${DB_USER:-root}
+  password: ${DB_PASS:-root}
+  url: ${DB_URL:-jdbc:mysql://localhost:3306/taskmanager}
+  properties:
+    charSet: UTF-8
+  # the maximum amount of time to wait on an empty pool before throwing an exception
+  maxWaitForConnection: 1s
+  # the SQL query to run when validating a connection's liveliness
+  validationQuery: "SELECT 1"
+  # the timeout before a connection validation queries fail
+  validationQueryTimeout: 3s
+  # the minimum number of connections to keep open
+  minSize: 1
+  # the maximum number of connections to keep open
+  maxSize: 32
+  # whether idle connections should be validated
+  checkConnectionWhileIdle: false
+  # the amount of time to sleep between runs of the idle connection validation, abandoned cleaner and idle pool resizing
+  evictionInterval: 10s
+  # the minimum amount of time a connection must sit idle in the pool before it is eligible for eviction
+  minIdleTime: 1 minute
