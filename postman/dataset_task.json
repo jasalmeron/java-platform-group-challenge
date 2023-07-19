@@ -1,0 +1,23 @@
+[
+  {
+    "task_name": "Start challenge",
+    "date": "2023-07-16T00:00:00Z",
+    "updated_task_name": "Update start challenge",
+    "updated_date": "2023-07-22T10:30:10Z",
+    "total_retrieved_tasks": 1
+  },
+  {
+    "task_name": "Finish all challenge steps",
+    "date": "2023-07-20T00:00:00Z",
+    "updated_task_name": "Update finish all challange steps",
+    "updated_date": "2023-07-21T23:45:30Z",
+    "total_retrieved_tasks": 2
+  },
+  {
+    "task_name": "Pair review challenge",
+    "date": "2023-07-21T00:00:00Z",
+    "updated_task_name": "Update pair review challenge",
+    "updated_date": "2023-07-23T13:59:59Z",
+    "total_retrieved_tasks": 3
+  }
+]
