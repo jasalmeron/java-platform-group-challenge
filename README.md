@@ -48,7 +48,7 @@ Once installed run from the postman\ directory within the project:
 ```
 newman run -d dataset_task.json Task\ Manager\ Automated\ Tests.postman_collection.json --verbose -r htmlextra
 ```
-This will generate an HTML report in postman\newman folder. An example is provided [here](postman\newman\Task Manager Automated Tests-2023-07-19-20-27-41-837-0.html)  
+This will generate an HTML report in postman\newman folder. An example is provided [here](postman/newman/Task%20Manager%20Automated%20Tests-2023-07-19-20-27-41-837-0.html)  
 
 ## TODO
 - Add monitoring (http status, log level, jvm) + more fine-grained logs
