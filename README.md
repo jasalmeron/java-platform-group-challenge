@@ -4,10 +4,10 @@
 
 You have to install before running in your local environment:
 
-    - Apache maven (recommended>= 3.6.3) or alternatively you can run Maven using the included [Maven wrapper](https://maven.apache.org/wrapper/) 
-    - Java 17 JDK
-    - [Docker](https://docs.docker.com/engine/install/) 
-    - Git client (optional)
+- Apache maven (recommended>= 3.6.3) or alternatively you can run Maven using the included [Maven wrapper](https://maven.apache.org/wrapper/) 
+- Java 17 JDK
+- [Docker](https://docs.docker.com/engine/install/) 
+- Git client (optional)
 
 > Note: Checkout [SDKMAN](https://sdkman.io/) if you are using other Java/Maven version and you want to easily switch between different Java/Maven versions.
 
