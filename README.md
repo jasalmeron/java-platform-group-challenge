@@ -2,7 +2,7 @@
 
 ## 1. How to start the TaskManager application in your local environment
 
-> Warning! during this section, both for tests and running the docker containeraized application, runs MySQL on port 3306 and starts the application in 8080 so be sure those ports are available, or it will fail.
+> Warning! during this section, both for tests and running the docker containeraized application, MySQL runs on port 3306 and the application starts in 8080 and 8081 so be sure these ports are available, or it will fail.
 
 ### You have to install before running in your local environment with Docker:
 
@@ -35,11 +35,11 @@ $ ./mvnw clean install
    $ java -jar target/task-manager-1.0-SNAPSHOT.jar db migrate src/main/resources/config.yml && java -jar target/task-manager-1.0-SNAPSHOT.jar server src/main/resources/config.yml` 
    ```
    
-## 2. Run tests and generate report
+## 2. Run tests and generate report against the running application
 
-On top of the generated tests during the build which includes the already commented HTML report of acceptance test using JGiven, once the application is running and with an empty table `task` in the database it can be performed a suite of tests that generates an HTML report.
+On top of the generated tests during the build which includes the already commented HTML report of acceptance test using [JGiven](https://jgiven.org/), once the application is running and with an empty table `task` in the database it can be performed a suite of tests that generates an HTML report.
 
-For that, firstly is required to have installed `node.js` and `npm`. If not, here you have a [handy guide] (https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+For that, firstly is required to have installed `node.js` and `npm`. If not, here you have a [handy guide] (https://docs.npmjs.com/downloading-and-installing-node-js-and-npm).
 
 Then, install newman, which is a tool to execute tests and generate reports for Postman collections, and its plugin for generate HTML reports:
 ```
@@ -57,7 +57,7 @@ This will generate an HTML report in postman\newman folder. An example is provid
 ## 3. Deploy taskmanager app to Oracle Cloud Platform (OCP)
 
 ### 3.1 Preparing the environment
-To follow next steps you will need (any step can be skipped if it is already installed or configured):
+Before continuing with the next steps, you will need (any step can be skipped if it is already installed or configured):
 - An Oracle Cloud Platform account (OCP), if you don't have one, sign in [here](https://www.oracle.com/es/cloud/sign-in.html).
 - [OCI Tenancy](https://docs.oracle.com/en-us/iaas/Content/GSG/Tasks/contactingsupport_topic-Finding_Your_Tenancy_OCID_Oracle_Cloud_Identifier.htm). Note your region, you will use it throughout the tutorial.
 - The [Terraform CLI](https://developer.hashicorp.com/terraform/tutorials/oci-get-started/install-cli) installed.
@@ -131,14 +131,14 @@ Now that our docker image is uploaded we'll prepare an OKE cluster where the app
 ![private subnet](screenshots/OKE_private_subnet.jpeg)
 
 ### 3.4 Create MySQL database
-- After having our OKE cluster created, click on the 'hamburguer' menu ico in the upper left corner of the page and go to "Databases" > "DB Systems" (or alternatively search 'DB Systems' in the search box)  
+- After having our OKE cluster created, click on the 'hamburguer' menu ico in the upper left corner of the page and go to "Databases" > "DB Systems" (or alternatively search 'DB Systems' in the search box):  
 ![Hamburguer menu DB Systems](screenshots/Hamburguer_menu_DB_Systems.png)  
-- Click create database and fill the field "Name" with a name for the database, e.g. taskmanager_mysql. Select "Standalone option" and fill the "Create administrator credentials" section witha username and a password. Remember them or save them in a secure place, you'll need them later.  
+- Click "Create DB system" and fill the field "Name" with a name for the database, e.g. taskmanager_mysql. Select "Standalone option" and fill the "Create administrator credentials" section with a username and a password. Remember them or save them in a secure place, you'll need them later.  
 In the "Configure networking section" select the Virtual cloud network (VCN) that was created for the OKE cluster and select the private subnet that was created within that VCN.  
 ![create mysql credentials top](screenshots/create_mysql_top.png)  
 ![create mysql credentials and networking](screenshots/create_mysql_credentials_and_networking.jpeg)  
-- Leave the rest of the options as they are and click on create button.
-- Once is created in DB Systems page you should see the name of the database introduced in the previous step, click on it and copy the "Private IP address" value:
+- Leave the rest of the options as they are and click on the create button.
+- Once is created in the "DB Systems" page you should see the name of the database introduced in the previous step, click on it and copy the "Private IP address" value:
 [created mysql private ip address value](screenshots/created_mysql_private_ip_address.jpeg)
 
 ### 3.5 Configure secrets in Vault
@@ -157,7 +157,7 @@ Once the Vault is created, click on its name to access its details.
   - DB_USER provided with the database user plain text value of the database username created in 3.4 Section.
   - DB_PASS provided with the database password plain text value of the database password created in 3.4 Section.
   - DB_URL provided with the database JDBC url plain text value of `jdbc:mysql://<database-ip>:3306/taskmanager?createDatabaseIfNotExist=true` replacing `<database-ip>` by the "Private IP address" of the database in 3.4 Section.
-#### Setp 2: Provide secrets references in Kubernetes deployment file
+#### Step 2: Provide secrets references in Kubernetes deployment file
   - Replace the base64 encoded values provided in Vault for each secret for the placeholders for each one in `deployments.yaml`:  
 ![Vault deployment secrets](screenshots/vault_deployment_secrets.png)
 
@@ -196,9 +196,10 @@ $ curl -XGET "http://<external-ip>/tasks" -v
 ## Possible improvements & tradeoffs 
 - Use of Terraform to create the infrastructure in OCP and deployment of the app. E.g. this repository could be used as an starting point for creating the cluster: https://github.com/oracle-terraform-modules/terraform-oci-oke/. On top of that would be nice also to orchestrate also the creation of the Oracle MySQL database on top of it.
 - Use of Github Actions to create the cluster if doesn't exists and build, test, generate a docker image and deploy it for each new version of the application, by implementing a CI/CD pipeline.
-- For the steps I described to create an OKE cluster and a MySQL by using the Oracle Console I skipped the possibility of creating a Stack and later plan and apply them with Terraform. Could be interesting to do it to have a Terraform configuration file in case it is needed to have a base to automatize with scripts this infrastructure.
+- For the steps I described to create an OKE cluster and a MySQL by using the Oracle Console and I skipped the possibility of creating a Stack and later plan and apply them with Terraform. It could be interesting to do it to have a Terraform configuration file in case it is needed to have a base to automatize with scripts this infrastructure creation.
 - The database user used for connecting from the application app to the database would be better changed to a user with restricted privileges, now is the admin user.
 - Swagger description of the API can be added for documentation purposes.
+- Maintain the Container Registry repository created as private instead of public and make OKE cluster able to access it.
 - Improve newman POSTMAN tests so that some of them don't depend on the database task table being empty.
 - I didn't reach to have time to develop a proper collection of application logs, application metrics and JVM metrics in order to search, visualize them and set alarms based on them in the deployed solution in OCP. For a production-ready application this should be highly desirable or even mandatory.
 - There isn't any scalability policy which should be very desirable for a production-ready application.
