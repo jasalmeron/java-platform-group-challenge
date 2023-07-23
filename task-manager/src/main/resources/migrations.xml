@@ -6,7 +6,18 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
-    <changeSet id="1" author="jasalmeron">
+    <!--<changeSet id="1" author="jasalmeron">
+        <sql dbms="mysql" endDelimiter=";">
+            CREATE SCHEMA IF NOT EXISTS taskmanager
+        </sql>
+    </changeSet>-->
+
+    <changeSet id="2" author="jasalmeron">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="task"/>
+            </not>
+        </preConditions>
         <createTable tableName="task">
             <column name="id" type="varchar(36)">
                 <constraints primaryKey="true" nullable="false"/>

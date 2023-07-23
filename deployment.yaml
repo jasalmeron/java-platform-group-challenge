@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-manager-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: task-manager-app
+  template:
+    metadata:
+      labels:
+        app: task-manager-app
+    spec:
+      containers:
+        - name: task-manager-app-container
+          image: eu-madrid-1.ocir.io/axiljxkv2iaf/oracle-challenge/task-manager:latest
+
+          env:
+            # move secrets to Vault
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: taskmanager-secrets
+                  key: db-user
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: taskmanager-secrets
+                  key: db-pass
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: taskmanager-secrets
+                  key: db-url
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: taskmanager-secrets
+type: Opaque
+data:
+  db-user: <VAULT_DB_USER-base64-value>
+  db-pass: <VAULT_DB_PASSWORD-base64-value>
+  db-url: <VAULT_DB_URL-base65-value>
+---
