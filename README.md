@@ -52,6 +52,8 @@ newman run -d dataset_task.json Task\ Manager\ Automated\ Tests.postman_collecti
 ```
 This will generate an HTML report in postman\newman folder. An example is provided [here](postman/newman/Task%20Manager%20Automated%20Tests-2023-07-19-20-27-41-837-0.html)  
 
+> Note: This postman newman tests are meant to pass all them as long as the database doesn't have tasks already created. 
+
 ## 3. Deploy taskmanager app to Oracle Cloud Platform (OCP)
 
 ### 3.1 Preparing the environment
@@ -91,19 +93,18 @@ Create the container repository:
 ```
 $ oci artifacts container repository create --display-name oracle-challenge/taskmanager --compartment-id <compartment_ocid>
 ```
-Execute a Docker login to the repository and enter your previous generated Auth token:
+Execute a Docker login to the repository and enter your previous generated Auth token (where ocp-account-username is your Oracle Cloud username):
 ```
 docker login <region-id>.ocir.io/<ocp-account-username>
 password: <auth-token>
 ```
 
-List your local docker images:
+List your local docker images and copy the image id of oracle-challenge/task-manager (or alternatevily the image name `oracle-challenge/task-manager:latest`)
 ```
 $ docker images
 ```
-and copy the image id of oracle-challenge/task-manager (or alternatevily the image name `oracle-challenge/task-manager:latest`)
 
-Create a docker tag. Note that if your tenancy is old instead of the tenancy namespace (Object storage namespace) found in the Tenancy details page you'll have to use your tenancy name.
+Create a docker tag. Note that if your tenancy is old, instead of the tenancy namespace (Object storage namespace) found in the Tenancy details page you'll have to use your tenancy name.
 ```
 docker tag <image-id-or-image-name> <region-key>.ocir.io/<tenancy-namespace>/oracle-challenge/task-manager:latest
 docker push <region-key>.ocir.io/<tenancy-namespace>/oracle-challenge/task-manager:latest
@@ -127,7 +128,7 @@ Now that our docker image is uploaded we'll prepare an OKE cluster where the app
 - In the "Kubernetes Clusters (OKE)" click on the "taskmanager" created cluster and the click on the VCN name link:  
 ![created cluster VCN name](screenshots/OKE_created_cluster_view.png)
 - Copy or remember the name of the OKE cluster VCN and the private subnet because they will be used in the next section (or you can visit again this page if you forget it).  
-![private subnet](screenshots/OKE_private_subnet.png)
+![private subnet](screenshots/OKE_private_subnet.jpeg)
 
 ### 3.4 Create MySQL database
 - After having our OKE cluster created, click on the 'hamburguer' menu ico in the upper left corner of the page and go to "Databases" > "DB Systems" (or alternatively search 'DB Systems' in the search box)  
@@ -135,10 +136,10 @@ Now that our docker image is uploaded we'll prepare an OKE cluster where the app
 - Click create database and fill the field "Name" with a name for the database, e.g. taskmanager_mysql. Select "Standalone option" and fill the "Create administrator credentials" section witha username and a password. Remember them or save them in a secure place, you'll need them later.  
 In the "Configure networking section" select the Virtual cloud network (VCN) that was created for the OKE cluster and select the private subnet that was created within that VCN.  
 ![create mysql credentials top](screenshots/create_mysql_top.png)  
-![create mysql credentials and networking](screenshots/create_mysql_credentials_and_networking.png)  
+![create mysql credentials and networking](screenshots/create_mysql_credentials_and_networking.jpeg)  
 - Leave the rest of the options as they are and click on create button.
 - Once is created in DB Systems page you should see the name of the database introduced in the previous step, click on it and copy the "Private IP address" value:
-[created mysql private ip address value](screenshots/created_mysql_private_ip_address.png)
+[created mysql private ip address value](screenshots/created_mysql_private_ip_address.jpeg)
 
 ### 3.5 Configure secrets in Vault
 Before jumping into the deployment of our task manager application to the OKE cluster we need to provide 3 secrets with Vault:
@@ -157,7 +158,7 @@ Once the Vault is created, click on its name to access its details.
   - DB_PASS provided with the database password plain text value of the database password created in 3.4 Section.
   - DB_URL provided with the database JDBC url plain text value of `jdbc:mysql://<database-ip>:3306/taskmanager?createDatabaseIfNotExist=true` replacing `<database-ip>` by the "Private IP address" of the database in 3.4 Section.
 #### Setp 2: Provide secrets references in Kubernetes deployment file
-  - Replace the base64 encoded values provided in Vault for each secret for the placeholders for each one in `deployments.yaml`:
+  - Replace the base64 encoded values provided in Vault for each secret for the placeholders for each one in `deployments.yaml`:  
 ![Vault deployment secrets](screenshots/vault_deployment_secrets.png)
 
 ### 3.6 Deploy taskmanager application to OKE cluster
@@ -192,17 +193,17 @@ Pick the IP value of <external-ip> and you can run a simple curl to check that t
 $ curl -XGET "http://<external-ip>/tasks" -v
 ```
 
-
 ## Possible improvements & tradeoffs 
 - Use of Terraform to create the infrastructure in OCP and deployment of the app. E.g. this repository could be used as an starting point for creating the cluster: https://github.com/oracle-terraform-modules/terraform-oci-oke/. On top of that would be nice also to orchestrate also the creation of the Oracle MySQL database on top of it.
 - Use of Github Actions to create the cluster if doesn't exists and build, test, generate a docker image and deploy it for each new version of the application, by implementing a CI/CD pipeline.
 - For the steps I described to create an OKE cluster and a MySQL by using the Oracle Console I skipped the possibility of creating a Stack and later plan and apply them with Terraform. Could be interesting to do it to have a Terraform configuration file in case it is needed to have a base to automatize with scripts this infrastructure.
 - The database user used for connecting from the application app to the database would be better changed to a user with restricted privileges, now is the admin user.
+- Swagger description of the API can be added for documentation purposes.
+- Improve newman POSTMAN tests so that some of them don't depend on the database task table being empty.
+- I didn't reach to have time to develop a proper collection of application logs, application metrics and JVM metrics in order to search, visualize them and set alarms based on them in the deployed solution in OCP. For a production-ready application this should be highly desirable or even mandatory.
+- There isn't any scalability policy which should be very desirable for a production-ready application.
+- It should be used secure socket layer (SSL) certificates with the OKE cluster created load balancer.
 - I considered out of the scope for this challenge to provide some sort of authentication/authorization mechanism for the REST API.
+- I considered out of the scope for this challenge to associate tasks to a given user.
 - I considered out of the scope for this challenge to provide a pagination mechanism for the GET /tasks call.
-- I considered out of the scope for this challenge to improve the task database maybe by indexing the date field and adding a field for controlling when the task rows are created/modified, but in the end is something I discarded because I considered that seemed to be an overengineered solution for achieving the requested challenges.
-
-
-## TODO
-- Add monitoring (http status, log level, jvm) + more fine-grained logs
----
+- I considered out of the scope for this challenge to improve the task database maybe by indexing the date field or adding a field for controlling when the task rows are created/modified.
