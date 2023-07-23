@@ -56,6 +56,7 @@ public class TaskManagerApplication extends Application<TaskManagerConfiguration
     @Override
     public void run(final TaskManagerConfiguration config, final Environment environment) {
         LOGGER.info("Initializing JDBI");
+        // This jdbi instantiation already registers a JdbiHealthCheck
         final Jdbi jdbi = new JdbiFactory().build(environment, config.getDataSourceFactory(), "database");
         TaskRepository taskRepository = new SQLTaskRepository(jdbi);
         LOGGER.info("Registering REST resources to Jersey");
@@ -65,7 +66,6 @@ public class TaskManagerApplication extends Application<TaskManagerConfiguration
         environment.jersey().register(new UpdateTaskResource(new UpdateOrCreateTask(taskRepository)));
         environment.jersey().register(new GetTasksResource(new GetTasks(taskRepository)));
         configureJsonMapper(environment.getObjectMapper());
-        LOGGER.info("Registering Application Health Check");
         environment.healthChecks().register("db", new JdbiHealthCheck(jdbi, config.getDataSourceFactory().getValidationQuery()));
     }
 

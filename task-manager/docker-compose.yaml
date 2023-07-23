@@ -1,5 +1,6 @@
 services:
   taskmanager:
+    image: oracle-challenge/task-manager
     build: .
     environment:
       - DB_URL=jdbc:mysql://db:3306/taskmanager
